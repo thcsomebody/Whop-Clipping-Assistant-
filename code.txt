@@ -1,0 +1,122 @@
+{
+  "name": "Whop.com Video Clipping",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/video-clip-request",
+        "options": {}
+      },
+      "name": "Webhook (Phase 1 & 3)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ],
+      "webhookId": "b1b2a3b4-c5d6-e7f8-g9h0-i1j2k3l4m5n6"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.body.video_url}}",
+        "responseFormat": "file",
+        "options": {}
+      },
+      "name": "HTTP Request (Download) (Phase 2)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "ffmpeg -i ./{{\"$binary.data.fileName\"}} -ss {{$json.body.start_time}} -to {{$json.body.end_time}} -c copy output.mp4"
+      },
+      "name": "Execute Command (Phase 4)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        920,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.example.com/upload-video",
+        "authentication": "headerAuth",
+        "sendBody": true,
+        "bodyContentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "value": "={{$binary.data}}",
+              "type": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "HTTP Request (Upload) (Phase 5)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1150,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Your API Auth"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook (Phase 1 & 3)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request (Download) (Phase 2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request (Download) (Phase 2)": {
+      "main": [
+        [
+          {
+            "node": "Execute Command (Phase 4)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command (Phase 4)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request (Upload) (Phase 5)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
