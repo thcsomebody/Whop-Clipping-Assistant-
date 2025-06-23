@@ -1,4 +1,5 @@
 Reasoning and Design Philosophy
+
 The provided document outlines a five-phase workflow for clipping videos from Whop.com. My goal is to translate this conceptual guide into functional, automated workflows for both n8n and Node-RED.
 The core logic is:
 Trigger: Receive a request containing the video URL, start time, and end time.
